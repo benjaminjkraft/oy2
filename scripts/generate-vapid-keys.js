@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { generateVAPIDKeys } from '../src/push.js';
+import { generateVAPIDKeys } from '../worker/push.js';
 
 console.log('Generating VAPID keys for push notifications...\n');
 const vapidKeys = await generateVAPIDKeys();

@@ -1,23 +1,27 @@
-const CACHE_NAME = 'oy-v2';
-const ASSETS = [
-  '/css/app.css',
-  '/js/app.js',
-  '/js/map.js',
+const CACHE_NAME = 'oy-v3';
+const CORE_ASSETS = [
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
+  '/icon.svg',
 ];
 
 // Install - cache assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS).catch((err) => {
+      return cache.addAll(CORE_ASSETS).catch((err) => {
         console.error('Failed to cache assets:', err);
       });
     })
   );
   self.skipWaiting();
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Activate - clean up old caches
@@ -44,9 +48,8 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
   const isSameOrigin = url.origin === self.location.origin;
-  const isStaticAsset = isSameOrigin && ASSETS.includes(url.pathname);
+  const isStaticAsset = isSameOrigin && (url.pathname.startsWith('/assets/') || CORE_ASSETS.includes(url.pathname));
 
-  // Only cache known static assets; everything else is network only
   if (!isStaticAsset) {
     event.respondWith(fetch(event.request));
     return;

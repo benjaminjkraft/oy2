@@ -2,11 +2,13 @@
   "name": "oy2",
   "version": "1.0.0",
   "description": "A minimalist Oy app - send Oys to your friends",
-  "main": "src/index.js",
+  "main": "worker/index.js",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "vite build && wrangler deploy",
     "generate-vapid": "node scripts/generate-vapid-keys.js",
     "db:create": "wrangler d1 create oy2-db",
     "db:migrate": "wrangler d1 migrations apply oy2-db --remote",
@@ -22,11 +24,17 @@
   "license": "MIT",
   "dependencies": {
     "@block65/webcrypto-web-push": "^1.0.2",
-    "hono": "^4.0.0"
+    "@kobalte/core": "^0.13.11",
+    "hono": "^4.11.4",
+    "leaflet": "^1.9.4",
+    "solid-js": "^1.9.10"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240000.0",
-    "wrangler": "4"
+    "@cloudflare/vite-plugin": "^1.20.1",
+    "@cloudflare/workers-types": "^4.20260113.0",
+    "vite": "^7.3.1",
+    "vite-plugin-solid": "^2.11.10",
+    "wrangler": "^4.58.0"
   },
   "packageManager": "yarn@4.12.0"
 }

@@ -1,17 +1,7 @@
 import { Hono } from 'hono';
-import { serveStatic } from 'hono/cloudflare-workers';
 import { sendPushNotification } from './push.js';
 
 const app = new Hono();
-
-// Serve static files
-app.get('/css/*', serveStatic({ root: './' }));
-app.get('/js/*', serveStatic({ root: './' }));
-app.get('/sw.js', serveStatic({ path: './sw.js' }));
-app.get('/manifest.json', serveStatic({ path: './manifest.json' }));
-app.get('/icon-192.png', serveStatic({ path: './icon-192.png' }));
-app.get('/icon-512.png', serveStatic({ path: './icon-512.png' }));
-app.get('/icon.svg', serveStatic({ path: './icon.svg' }));
 
 // Middleware to get current user from header
 app.use('*', async (c, next) => {
@@ -359,10 +349,6 @@ app.post('/api/push/unsubscribe', async (c) => {
 app.get('/api/push/vapid-public-key', async (c) => {
   return c.json({ publicKey: c.env.VAPID_PUBLIC_KEY });
 });
-
-// ============ Server-Side Rendered Pages ============
-
-app.get('/', serveStatic({ path: './index.html' }));
 
 // Export the app as a Worker
 export default app;

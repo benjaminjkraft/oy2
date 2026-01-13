@@ -13,7 +13,7 @@ A minimalist social media app. Send simple "Oy" messages to your friends with pu
 
 ## Tech Stack
 
-- **Frontend**: Vanilla JavaScript, SSR HTML, CSS
+- **Frontend**: SolidJS + Kobalte (Vite)
 - **Backend**: Hono framework on Cloudflare Workers
 - **Database**: Cloudflare D1 (SQLite at the edge)
 - **Push Notifications**: Web Push API
@@ -80,7 +80,14 @@ VAPID_PRIVATE_KEY=your_vapid_private_key_here
 yarn dev
 ```
 
-The app will be available at [http://localhost:8787](http://localhost:8787)
+The app will be available at [http://localhost:5173](http://localhost:5173).
+
+7. Build and preview locally:
+
+```bash
+yarn build
+yarn preview
+```
 
 ## Production Deployment (Cloudflare Workers)
 
@@ -158,14 +165,14 @@ npx wrangler d1 migrations create oy2-db migration_name
 ```
 oy2/
 ├── src/
+│   ├── App.jsx          # SolidJS app
+│   ├── main.jsx         # Frontend entrypoint
+│   ├── map.js           # Leaflet map setup
+│   └── styles.css       # UI styles
+├── worker/
 │   ├── index.js         # Hono app for Cloudflare Workers
-│   ├── push.js          # Web Push notification logic
-│   └── views.js         # Server-side rendered HTML templates
+│   └── push.js          # Web Push notification logic
 ├── public/
-│   ├── css/
-│   │   └── app.css      # Minimal CSS styling
-│   ├── js/
-│   │   └── app.js       # Client-side vanilla JavaScript
 │   ├── sw.js            # Service Worker for PWA
 │   ├── manifest.json    # PWA manifest
 │   └── icon.svg         # App icon
@@ -173,6 +180,8 @@ oy2/
 │   └── 0001_initial_schema.sql  # D1 database schema
 ├── scripts/
 │   └── generate-vapid-keys.js   # Helper to generate VAPID keys
+├── index.html           # Vite HTML entrypoint
+├── vite.config.js       # Vite + Cloudflare plugin config
 ├── wrangler.toml        # Cloudflare Workers configuration
 └── package.json         # Dependencies and scripts
 ```
