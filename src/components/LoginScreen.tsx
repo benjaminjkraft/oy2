@@ -1,3 +1,4 @@
+import { Button } from "@kobalte/core/button";
 import type { JSX } from "solid-js";
 import { Screen } from "./Screen";
 import "./LoginScreen.css";
@@ -21,7 +22,7 @@ export function LoginScreen(props: LoginScreenProps) {
 					minlength="2"
 					maxlength="20"
 				/>
-				<button type="submit">Get Started</button>
+				<Button type="submit">Get Started</Button>
 			</form>
 		</Screen>
 	);

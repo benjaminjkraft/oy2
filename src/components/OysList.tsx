@@ -1,3 +1,4 @@
+import { Button } from "@kobalte/core/button";
 import { For, Show } from "solid-js";
 import type { Oy, OyPayload } from "../types";
 import { formatTime } from "../utils";
@@ -27,11 +28,10 @@ export function OysList(props: OysListProps) {
 						const isOpen = () => props.openLocations().has(oy.id);
 
 						return (
-							<button
+							<Button
 								class={`oys-list-item${
 									isLocation ? " oys-list-item-location" : ""
 								}`}
-								type="button"
 								onClick={() => isLocation && props.onToggleLocation(oy.id)}
 								data-oy-id={oy.id}
 								aria-expanded={isLocation ? isOpen() : undefined}
@@ -47,9 +47,8 @@ export function OysList(props: OysListProps) {
 										</div>
 										<Show when={isLocation}>
 											<div class="oys-list-item-toggle-slot">
-												<button
+												<Button
 													class="oys-location-toggle"
-													type="button"
 													onClick={(event) => {
 														event.stopPropagation();
 														props.onToggleLocation(oy.id);
@@ -62,7 +61,7 @@ export function OysList(props: OysListProps) {
 															}`}
 														/>
 													</span>
-												</button>
+												</Button>
 											</div>
 										</Show>
 									</div>
@@ -80,7 +79,7 @@ export function OysList(props: OysListProps) {
 										</div>
 									</Show>
 								</div>
-							</button>
+							</Button>
 						);
 					}}
 				</For>

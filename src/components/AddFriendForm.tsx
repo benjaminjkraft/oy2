@@ -1,3 +1,4 @@
+import { Button } from "@kobalte/core/button";
 import { createEffect, createSignal, For, Show } from "solid-js";
 import type { SearchUser, User } from "../types";
 import "./AddFriendForm.css";
@@ -80,13 +81,12 @@ export function AddFriendForm(props: AddFriendFormProps) {
 								<div class="add-friend-list-item-content">
 									<div class="add-friend-list-item-title">{user.username}</div>
 								</div>
-								<button
-									type="button"
+								<Button
 									disabled={user.added}
 									onClick={() => addFriend(user.id)}
 								>
 									{user.added ? "Added!" : "Add Friend"}
-								</button>
+								</Button>
 							</div>
 						)}
 					</For>

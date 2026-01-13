@@ -1,3 +1,4 @@
+import { Button } from "@kobalte/core/button";
 import type { User } from "../types";
 import "./AppHeader.css";
 
@@ -12,9 +13,7 @@ export function AppHeader(props: AppHeaderProps) {
 			<h1 class="app-title">Oy</h1>
 			<div class="app-user-info">
 				<span>{props.user.username}</span>
-				<button type="button" onClick={props.onLogout}>
-					Logout
-				</button>
+				<Button onClick={props.onLogout}>Logout</Button>
 			</div>
 		</div>
 	);

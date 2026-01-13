@@ -1,3 +1,4 @@
+import { Button } from "@kobalte/core/button";
 import "./UpdateToast.css";
 
 type UpdateToastProps = {
@@ -8,9 +9,7 @@ export function UpdateToast(props: UpdateToastProps) {
 	return (
 		<div class="update-toast">
 			<span>Update available</span>
-			<button type="button" onClick={props.onRefresh}>
-				Refresh
-			</button>
+			<Button onClick={props.onRefresh}>Refresh</Button>
 		</div>
 	);
 }
