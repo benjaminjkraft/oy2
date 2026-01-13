@@ -14,6 +14,19 @@
   --border: #e0e0e0;
   --success: #10b981;
   --error: #ef4444;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #8a8dff;
+    --primary-dark: #6b6fe6;
+    --text: #f3f4f6;
+    --text-light: #b3b7c3;
+    --bg: #0f1115;
+    --bg-secondary: #1a1d23;
+    --border: #2a2f38;
+  }
 }
 
 body {
@@ -22,6 +35,10 @@ body {
   color: var(--text);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+.booting .screen {
+  display: none !important;
 }
 
 .screen {

@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { serveStatic } from 'hono/cloudflare-workers';
-import { renderHomePage } from './views.js';
 import { sendPushNotification } from './push.js';
 
 const app = new Hono();
@@ -170,6 +169,7 @@ app.post('/api/oy', async (c) => {
     for (const sub of subscriptions.results || []) {
       const subscription = {
         endpoint: sub.endpoint,
+        expirationTime: null,
         keys: {
           p256dh: sub.keys_p256dh,
           auth: sub.keys_auth,
@@ -270,9 +270,7 @@ app.get('/api/push/vapid-public-key', async (c) => {
 
 // ============ Server-Side Rendered Pages ============
 
-app.get('/', (c) => {
-  return c.html(renderHomePage());
-});
+app.get('/', serveStatic({ path: './index.html' }));
 
 // Export the app as a Worker
 export default app;

@@ -14,12 +14,21 @@ database_id = "bf90ad59-1e3c-40e7-b144-bba66eb17287"
 directory = "./public"
 binding = "ASSETS"
 
-# Environment variables (set these as secrets)
-# Run: wrangler secret put VAPID_PUBLIC_KEY
-# Run: wrangler secret put VAPID_PRIVATE_KEY
-[vars]
-# Public variables go here
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
 
 # Development settings
 [dev]
 port = 8787
+
+# Deployment settings
+[[routes]]
+pattern = "oyme.site"
+custom_domain = true

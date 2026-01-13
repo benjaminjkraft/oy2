@@ -21,6 +21,11 @@ const yosList = document.getElementById('yos-list');
 const searchForm = document.getElementById('search-form');
 const searchInput = document.getElementById('search-input');
 const searchResults = document.getElementById('search-results');
+const bodyEl = document.body;
+
+function finishBoot() {
+  bodyEl.classList.remove('booting');
+}
 
 // API helper
 async function api(endpoint, options = {}) {
@@ -57,16 +62,45 @@ async function registerServiceWorker() {
     const registration = await navigator.serviceWorker.register('/sw.js');
     console.log('Service Worker registered');
 
-    // Request notification permission and subscribe to push
-    if ('Notification' in window && 'PushManager' in window) {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        await subscribeToPush(registration);
-      }
-    }
+    await ensurePushSubscription(registration);
   } catch (err) {
     console.error('Service Worker registration failed:', err);
   }
+}
+
+async function ensurePushSubscription(registration) {
+  if (!('Notification' in window && 'PushManager' in window)) {
+    return;
+  }
+
+  let permission = Notification.permission;
+  if (permission === 'denied') {
+    return;
+  }
+
+  if (permission !== 'granted') {
+    permission = await Notification.requestPermission();
+  }
+
+  if (permission !== 'granted') {
+    return;
+  }
+
+  const existing = await registration.pushManager.getSubscription();
+  if (existing) {
+    try {
+      await api('/api/push/subscribe', {
+        method: 'POST',
+        body: JSON.stringify(existing.toJSON()),
+      });
+      console.log('Push subscription refreshed');
+    } catch (err) {
+      console.error('Push subscription refresh failed:', err);
+    }
+    return;
+  }
+
+  await subscribeToPush(registration);
 }
 
 async function subscribeToPush(registration) {
@@ -129,11 +163,13 @@ logoutBtn.addEventListener('click', () => {
 });
 
 function showLoginScreen() {
+  finishBoot();
   loginScreen.classList.remove('hidden');
   mainScreen.classList.add('hidden');
 }
 
 function showMainScreen() {
+  finishBoot();
   loginScreen.classList.add('hidden');
   mainScreen.classList.remove('hidden');
   currentUsernameEl.textContent = currentUser.username;
@@ -154,7 +190,12 @@ if (savedUsername) {
     })
     .catch(() => {
       localStorage.removeItem('username');
+      showLoginScreen();
+    })
+    .finally(() => {
     });
+} else {
+  showLoginScreen();
 }
 
 // Tab switching

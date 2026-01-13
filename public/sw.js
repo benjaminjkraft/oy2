@@ -1,6 +1,5 @@
-const CACHE_NAME = 'oy-v1';
+const CACHE_NAME = 'oy-v2';
 const ASSETS = [
-  '/',
   '/css/app.css',
   '/js/app.js',
   '/manifest.json',
@@ -42,7 +41,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets - cache first, fall back to network
+  const url = new URL(event.request.url);
+  const isSameOrigin = url.origin === self.location.origin;
+  const isStaticAsset = isSameOrigin && ASSETS.includes(url.pathname);
+
+  // Only cache known static assets; everything else is network only
+  if (!isStaticAsset) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
       if (response) {
@@ -50,7 +58,6 @@ self.addEventListener('fetch', (event) => {
       }
 
       return fetch(event.request).then((response) => {
-        // Cache successful responses
         if (response.status === 200) {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {

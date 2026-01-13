@@ -1,10 +1,4 @@
-/**
- * Server-side rendered HTML views
- * Minimal, fast-loading HTML for the PWA
- */
-
-export function renderHomePage() {
-  return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -12,15 +6,19 @@ export function renderHomePage() {
   <meta name="description" content="Oy - Send Oys to your friends">
   <meta name="theme-color" content="#5B5FFF">
   <title>Oy</title>
+  <style>
+    .hidden { display: none !important; }
+    body.booting .screen { display: none !important; }
+  </style>
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="stylesheet" href="/css/app.css">
 </head>
-<body>
+<body class="booting">
   <div id="app">
     <!-- Login Screen -->
-    <div id="login-screen" class="screen">
+    <div id="login-screen" class="screen hidden">
       <div class="container">
         <h1 class="logo">Oy</h1>
         <p class="tagline">Send Oys to your friends</p>
@@ -91,5 +89,4 @@ export function renderHomePage() {
 
   <script src="/js/app.js" type="module"></script>
 </body>
-</html>`;
-}
+</html>
