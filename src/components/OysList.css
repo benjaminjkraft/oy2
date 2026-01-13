@@ -44,6 +44,10 @@
 	padding-right: 3.5rem;
 }
 
+.oys-list-item-header-location {
+	margin-bottom: 0.5rem;
+}
+
 .oys-list-item-text {
 	display: flex;
 	flex-direction: column;
@@ -80,7 +84,6 @@
 
 .oys-location-panel.open {
 	max-height: 380px;
-	margin-top: 0.5rem;
 }
 
 .oys-location-toggle {
@@ -99,9 +102,6 @@
 	justify-content: center;
 	width: 40px;
 	height: 40px;
-	border-radius: 999px;
-	border: 1px solid var(--border);
-	background: var(--bg);
 }
 
 .oys-location-arrow {

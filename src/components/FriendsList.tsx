@@ -1,13 +1,13 @@
-import { Button } from "@kobalte/core/button";
 import { For, Show } from "solid-js";
 import type { Friend } from "../types";
+import { AsyncButton } from "./AsyncButton";
 import "./ButtonStyles.css";
 import "./FriendsList.css";
 
 type FriendsListProps = {
 	friends: Friend[];
-	onSendOy: (friendId: number) => void;
-	onSendLo: (friendId: number) => void;
+	onSendOy: (friendId: number) => Promise<void>;
+	onSendLo: (friendId: number) => Promise<void>;
 };
 
 export function FriendsList(props: FriendsListProps) {
@@ -24,12 +24,18 @@ export function FriendsList(props: FriendsListProps) {
 								<div class="friends-list-item-title">{friend.username}</div>
 							</div>
 							<div class="friends-list-item-actions">
-								<Button class="btn-oy" onClick={() => props.onSendOy(friend.id)}>
+								<AsyncButton
+									class="btn-oy"
+									onClick={() => props.onSendOy(friend.id)}
+								>
 									Oy!
-								</Button>
-								<Button class="btn-lo" onClick={() => props.onSendLo(friend.id)}>
+								</AsyncButton>
+								<AsyncButton
+									class="btn-lo"
+									onClick={() => props.onSendLo(friend.id)}
+								>
 									Lo!
-								</Button>
+								</AsyncButton>
 							</div>
 						</div>
 					)}

@@ -38,7 +38,9 @@ export function OysList(props: OysListProps) {
 								disabled={!isLocation}
 							>
 								<div class="oys-list-item-content">
-									<div class="oys-list-item-header">
+									<div
+										class={`oys-list-item-header${isLocation ? " oys-list-item-header-location" : ""}`}
+									>
 										<div class="oys-list-item-text">
 											<div class="oys-list-item-title">{title}</div>
 											<div class="oys-list-item-subtitle">
