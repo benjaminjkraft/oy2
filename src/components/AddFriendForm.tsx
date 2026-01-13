@@ -1,0 +1,97 @@
+import { createEffect, createSignal, For, Show } from "solid-js";
+import type { SearchUser, User } from "../types";
+
+type AddFriendFormProps = {
+	api: <T>(endpoint: string, options?: RequestInit) => Promise<T>;
+	currentUser: () => User | null;
+};
+
+export function AddFriendForm(props: AddFriendFormProps) {
+	const [results, setResults] = createSignal<SearchUser[]>([]);
+	const [query, setQuery] = createSignal("");
+	let debounce: ReturnType<typeof setTimeout> | undefined;
+
+	createEffect(() => {
+		const value = query().trim();
+		clearTimeout(debounce);
+		if (value.length < 2) {
+			setResults([]);
+			return;
+		}
+
+		debounce = setTimeout(async () => {
+			try {
+				const { users } = await props.api<{ users: SearchUser[] }>(
+					`/api/users/search?q=${encodeURIComponent(value)}`,
+				);
+				setResults(users || []);
+			} catch (err) {
+				console.error("Search failed:", err);
+			}
+		}, 300);
+	});
+
+	async function addFriend(friendId: number) {
+		try {
+			await props.api("/api/friends", {
+				method: "POST",
+				body: JSON.stringify({ friendId }),
+			});
+			setResults((prev) =>
+				prev.map((user) =>
+					user.id === friendId ? { ...user, added: true } : user,
+				),
+			);
+		} catch (err) {
+			alert((err as Error).message);
+		}
+	}
+
+	const showPrompt = () => query().trim().length < 2;
+
+	return (
+		<>
+			<form onSubmit={(event) => event.preventDefault()}>
+				<input
+					type="text"
+					placeholder="Search username"
+					autocomplete="off"
+					value={query()}
+					onInput={(event) => setQuery(event.currentTarget.value)}
+				/>
+			</form>
+			<div class="list">
+				<Show
+					when={results().length > 0}
+					fallback={
+						<p class="empty-state">
+							{showPrompt() ? "Search for friends to add" : "No users found"}
+						</p>
+					}
+				>
+					<For
+						each={results().filter(
+							(user) => user.id !== props.currentUser()?.id,
+						)}
+					>
+						{(user) => (
+							<div class="list-item">
+								<div class="list-item-content">
+									<div class="list-item-title">{user.username}</div>
+								</div>
+								<button
+									class="btn-secondary"
+									type="button"
+									disabled={user.added}
+									onClick={() => addFriend(user.id)}
+								>
+									{user.added ? "Added!" : "Add Friend"}
+								</button>
+							</div>
+						)}
+					</For>
+				</Show>
+			</div>
+		</>
+	);
+}
