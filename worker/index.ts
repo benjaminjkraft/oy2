@@ -232,6 +232,7 @@ app.post("/api/oy", async (c) => {
 				body: `${user.username} sent you an Oy!`,
 				icon: "/icon-192.png",
 				badge: "/icon-192.png",
+				type: "oy",
 				tag: `yo-${result.meta.last_row_id}`,
 			}).catch(async (err) => {
 				console.error("Failed to send push:", err);
@@ -347,6 +348,7 @@ app.post("/api/lo", async (c) => {
 				body: `${user.username} shared a location`,
 				icon: "/icon-192.png",
 				badge: "/icon-192.png",
+				type: "lo",
 				tag: `lo-${result.meta.last_row_id}`,
 				url,
 			}).catch(async (err) => {

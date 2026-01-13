@@ -14,6 +14,7 @@ L.Icon.Default.mergeOptions({
 	iconRetinaUrl: markerIcon2xUrl,
 	shadowUrl: markerShadowUrl,
 });
+L.Icon.Default.imagePath = "";
 
 type MapContainer = HTMLDivElement & {
 	_leafletMap?: L.Map;

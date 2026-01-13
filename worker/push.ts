@@ -1,5 +1,5 @@
-import { buildPushPayload } from "@block65/webcrypto-web-push";
 import type { PushMessage } from "@block65/webcrypto-web-push";
+import { buildPushPayload } from "@block65/webcrypto-web-push";
 
 const DEFAULT_VAPID_SUBJECT = "mailto:admin@example.com";
 

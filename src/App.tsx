@@ -286,6 +286,28 @@ export default function App() {
 		setBooting(false);
 	});
 
+	onMount(() => {
+		if (!("serviceWorker" in navigator)) {
+			return;
+		}
+
+		const oyAudio = new Audio("/oy.wav");
+		oyAudio.preload = "auto";
+
+		const onMessage = (event: MessageEvent) => {
+			const payload = event.data?.payload as { type?: string } | undefined;
+			if (payload?.type !== "oy") {
+				return;
+			}
+			void oyAudio.play();
+		};
+
+		navigator.serviceWorker.addEventListener("message", onMessage);
+		onCleanup(() => {
+			navigator.serviceWorker.removeEventListener("message", onMessage);
+		});
+	});
+
 	createEffect(() => {
 		const registration = swRegistration();
 		if (registration && currentUser()) {

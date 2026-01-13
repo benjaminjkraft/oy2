@@ -4,6 +4,7 @@ const CORE_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
   '/icon.svg',
+  '/oy.wav',
 ];
 
 // Install - cache assets
@@ -98,9 +99,19 @@ self.addEventListener('push', (event) => {
     },
   };
 
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
+  const notifyPromise = self.registration.showNotification(data.title, options);
+  const broadcastPromise = clients
+    .matchAll({ type: 'window', includeUncontrolled: true })
+    .then((clientList) => {
+      if (clientList.length === 0) {
+        return;
+      }
+      for (const client of clientList) {
+        client.postMessage({ type: 'push', payload: data });
+      }
+    });
+
+  event.waitUntil(Promise.all([notifyPromise, broadcastPromise]));
 });
 
 // Notification click
