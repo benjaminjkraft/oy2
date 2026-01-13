@@ -11,6 +11,7 @@
 		"deploy": "vite build && wrangler deploy",
 		"lint": "biome lint .",
 		"format": "biome format . --write",
+		"check": "tsc -b",
 		"generate-vapid": "node scripts/generate-vapid-keys.js",
 		"db:create": "wrangler d1 create oy2-db",
 		"db:migrate": "wrangler d1 migrations apply oy2-db --remote",

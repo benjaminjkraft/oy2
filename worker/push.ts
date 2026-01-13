@@ -1,4 +1,5 @@
 import { buildPushPayload } from "@block65/webcrypto-web-push";
+import type { PushMessage } from "@block65/webcrypto-web-push";
 
 const DEFAULT_VAPID_SUBJECT = "mailto:admin@example.com";
 
@@ -34,7 +35,7 @@ export async function sendPushNotification(
 		expirationTime: number | null;
 		keys: { p256dh: string; auth: string };
 	},
-	payload: Record<string, unknown>,
+	payload: PushMessage["data"],
 ) {
 	if (!env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY) {
 		throw new Error("VAPID keys not configured");
@@ -46,7 +47,7 @@ export async function sendPushNotification(
 		privateKey: env.VAPID_PRIVATE_KEY,
 	};
 
-	const message = {
+	const message: PushMessage = {
 		data: payload,
 		options: {
 			ttl: 60,
@@ -57,7 +58,7 @@ export async function sendPushNotification(
 	const res = await fetch(subscription.endpoint, {
 		method: request.method,
 		headers: request.headers,
-		body: request.body,
+		body: request.body as BodyInit,
 	});
 
 	if (!res.ok) {

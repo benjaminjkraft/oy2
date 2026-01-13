@@ -8,19 +8,52 @@ type Bindings = {
 	VAPID_SUBJECT?: string;
 };
 
-const app = new Hono<{ Bindings: Bindings }>();
+type User = {
+	id: number;
+	username: string;
+	created_at?: number;
+};
+
+type FriendUser = {
+	id: number;
+	username: string;
+};
+
+type PushSubscriptionRow = {
+	endpoint: string;
+	keys_p256dh: string;
+	keys_auth: string;
+};
+
+type YoRow = {
+	id: number;
+	from_user_id: number;
+	to_user_id: number;
+	type: string | null;
+	payload: string | null;
+	created_at: number;
+	from_username: string;
+};
+
+const app = new Hono<{
+	Bindings: Bindings;
+	Variables: {
+		user: User | null;
+	};
+}>();
 
 // Middleware to get current user from header
 app.use("*", async (c, next) => {
+	c.set("user", null);
 	const username = c.req.header("x-username");
 	if (username) {
 		try {
-			const user = await c.env.DB.prepare(
+			const user = (await c.env.DB.prepare(
 				"SELECT * FROM users WHERE username = ?",
 			)
 				.bind(username)
-				.first();
-			c.set("user", user);
+				.first()) as User | null;
+			c.set("user", user ?? null);
 		} catch (err) {
 			console.error("Error fetching user:", err);
 		}
@@ -39,9 +72,9 @@ app.post("/api/users", async (c) => {
 	}
 
 	// Check if user exists
-	let user = await c.env.DB.prepare("SELECT * FROM users WHERE username = ?")
+	let user = (await c.env.DB.prepare("SELECT * FROM users WHERE username = ?")
 		.bind(username)
-		.first();
+		.first()) as User | null;
 
 	if (!user) {
 		try {
@@ -55,9 +88,9 @@ app.post("/api/users", async (c) => {
 				return c.json({ error: "Username already taken" }, 400);
 			}
 
-			user = await c.env.DB.prepare("SELECT * FROM users WHERE id = ?")
+			user = (await c.env.DB.prepare("SELECT * FROM users WHERE id = ?")
 				.bind(result.meta.last_row_id)
-				.first();
+				.first()) as User | null;
 		} catch (_err) {
 			return c.json({ error: "Username already taken" }, 400);
 		}
@@ -80,7 +113,8 @@ app.get("/api/users/search", async (c) => {
 		.bind(`%${q}%`)
 		.all();
 
-	return c.json({ users: users.results || [] });
+	const userResults = (users.results || []) as FriendUser[];
+	return c.json({ users: userResults });
 });
 
 // Add friend
@@ -97,9 +131,9 @@ app.post("/api/friends", async (c) => {
 	}
 
 	// Check if friend exists
-	const friend = await c.env.DB.prepare("SELECT * FROM users WHERE id = ?")
+	const friend = (await c.env.DB.prepare("SELECT * FROM users WHERE id = ?")
 		.bind(friendId)
-		.first();
+		.first()) as User | null;
 
 	if (!friend) {
 		return c.json({ error: "User not found" }, 404);
@@ -135,7 +169,8 @@ app.get("/api/friends", async (c) => {
 		.bind(user.id)
 		.all();
 
-	return c.json({ friends: friends.results || [] });
+	const friendResults = (friends.results || []) as FriendUser[];
+	return c.json({ friends: friendResults });
 });
 
 // Send Oy
@@ -180,7 +215,9 @@ app.post("/api/oy", async (c) => {
 			.bind(toUserId)
 			.all();
 
-		for (const sub of subscriptions.results || []) {
+		const subscriptionResults = (subscriptions.results ||
+			[]) as PushSubscriptionRow[];
+		for (const sub of subscriptionResults) {
 			const subscription = {
 				endpoint: sub.endpoint,
 				expirationTime: null,
@@ -233,7 +270,8 @@ app.get("/api/oys", async (c) => {
 		.bind(user.id)
 		.all();
 
-	const results = (yos.results || []).map((yo) => ({
+	const yoRows = (yos.results || []) as YoRow[];
+	const results = yoRows.map((yo) => ({
 		...yo,
 		payload: yo.payload ? JSON.parse(yo.payload) : null,
 		type: yo.type || "oy",
@@ -290,7 +328,9 @@ app.post("/api/lo", async (c) => {
 			.bind(toUserId)
 			.all();
 
-		for (const sub of subscriptions.results || []) {
+		const subscriptionResults = (subscriptions.results ||
+			[]) as PushSubscriptionRow[];
+		for (const sub of subscriptionResults) {
 			const subscription = {
 				endpoint: sub.endpoint,
 				expirationTime: null,
