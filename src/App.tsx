@@ -39,6 +39,9 @@ export default function App() {
 		parsedOyId !== null && Number.isFinite(parsedOyId) ? parsedOyId : null;
 	let pendingExpandType: string | null = requestedExpand;
 	let hasUpdatedHash = false;
+	let swipeStartX: number | null = null;
+	let swipeStartY: number | null = null;
+	const tabOrder = ["friends", "oys", "add"] as const;
 
 	async function api<T>(
 		endpoint: string,
@@ -274,6 +277,38 @@ export default function App() {
 		});
 	}
 
+	function handleSwipeStart(event: TouchEvent) {
+		const target = event.target as HTMLElement | null;
+		if (target?.closest("input, textarea, select, button, .oys-location-map")) {
+			return;
+		}
+		swipeStartX = event.touches[0].clientX;
+		swipeStartY = event.touches[0].clientY;
+	}
+
+	function handleSwipeEnd(event: TouchEvent) {
+		if (swipeStartX === null || swipeStartY === null) {
+			return;
+		}
+		const touch = event.changedTouches[0];
+		const deltaX = touch.clientX - swipeStartX;
+		const deltaY = touch.clientY - swipeStartY;
+		swipeStartX = null;
+		swipeStartY = null;
+
+		if (Math.abs(deltaX) < 60 || Math.abs(deltaX) < Math.abs(deltaY)) {
+			return;
+		}
+
+		const currentIndex = tabOrder.indexOf(tab() as (typeof tabOrder)[number]);
+		const direction = deltaX > 0 ? -1 : 1;
+		const nextIndex = currentIndex + direction;
+		const nextTab = tabOrder[nextIndex];
+		if (nextTab) {
+			setTab(nextTab);
+		}
+	}
+
 	onMount(async () => {
 		await registerServiceWorker();
 		const savedUsername = localStorage.getItem("username");
@@ -379,29 +414,35 @@ export default function App() {
 							</Tabs.Trigger>
 						</Tabs.List>
 
-						<Tabs.Content value="friends">
-							<FriendsList
-								friends={friends()}
-								onSendOy={sendOy}
-								onSendLo={sendLo}
-							/>
-						</Tabs.Content>
+						<div
+							class="app-tab-panels"
+							onTouchStart={handleSwipeStart}
+							onTouchEnd={handleSwipeEnd}
+						>
+							<Tabs.Content value="friends">
+								<FriendsList
+									friends={friends()}
+									onSendOy={sendOy}
+									onSendLo={sendLo}
+								/>
+							</Tabs.Content>
 
-						<Tabs.Content value="oys">
-							<OysList
-								oys={oys()}
-								openLocations={openLocations}
-								onToggleLocation={toggleLocation}
-							/>
-						</Tabs.Content>
+							<Tabs.Content value="oys">
+								<OysList
+									oys={oys()}
+									openLocations={openLocations}
+									onToggleLocation={toggleLocation}
+								/>
+							</Tabs.Content>
 
-						<Tabs.Content value="add">
-							<AddFriendForm
-								api={api}
-								currentUser={currentUser}
-								friends={friends}
-							/>
-						</Tabs.Content>
+							<Tabs.Content value="add">
+								<AddFriendForm
+									api={api}
+									currentUser={currentUser}
+									friends={friends}
+								/>
+							</Tabs.Content>
+						</div>
 					</Tabs.Root>
 				</Screen>
 			</Show>
