@@ -8,7 +8,7 @@ import { LoginScreen } from "./components/LoginScreen";
 import { OysList } from "./components/OysList";
 import { Screen } from "./components/Screen";
 import { SwipeableTabs } from "./components/SwipeableTabs";
-import type { Friend, Oy, User } from "./types";
+import type { Friend, Oy, OysCursor, User } from "./types";
 import { urlBase64ToUint8Array } from "./utils";
 import "./App.css";
 
@@ -36,6 +36,10 @@ export default function App() {
 	const [swRegistration, setSwRegistration] =
 		createSignal<ServiceWorkerRegistration | null>(null);
 	const parsedOyId = requestedOyId ? Number(requestedOyId) : null;
+	const [loadingOys, setLoadingOys] = createSignal(false);
+	const [loadingMoreOys, setLoadingMoreOys] = createSignal(false);
+	const [hasMoreOys, setHasMoreOys] = createSignal(true);
+	const [oysCursor, setOysCursor] = createSignal<OysCursor | null>(null);
 	let pendingExpandOyId: number | null =
 		parsedOyId !== null && Number.isFinite(parsedOyId) ? parsedOyId : null;
 	let pendingExpandType: string | null = requestedExpand;
@@ -151,28 +155,51 @@ export default function App() {
 		}
 	}
 
-	async function loadOys() {
-		try {
-			const { oys: oysData } = await api<{ oys: Oy[] }>("/api/oys");
-			setOys(oysData || []);
-		} catch (err) {
-			console.error("Failed to load oys:", err);
+	async function loadOysPage({ reset = false }: { reset?: boolean } = {}) {
+		if (!reset && (loadingMoreOys() || !hasMoreOys())) {
+			return;
+		}
+		if (reset) {
+			setLoadingOys(true);
+		} else {
+			setLoadingMoreOys(true);
 		}
 
-		const expandId = pendingExpandOyId;
-		if (expandId !== null && pendingExpandType === "location") {
-			setOpenLocations((prev) => {
-				const next = new Set(prev);
-				next.add(expandId);
-				return next;
-			});
-			pendingExpandOyId = null;
-			pendingExpandType = null;
+		try {
+			const cursor = reset ? null : oysCursor();
+			const query = cursor
+				? `?before=${cursor.before}&beforeId=${cursor.beforeId}`
+				: "";
+			const { oys: oysData, nextCursor } = await api<{
+				oys: Oy[];
+				nextCursor: OysCursor | null;
+			}>(`/api/oys${query}`);
+			setOys((prev) => (reset ? oysData : [...prev, ...oysData]));
+			setOysCursor(nextCursor);
+			setHasMoreOys(!!nextCursor);
+		} catch (err) {
+			console.error("Failed to load oys:", err);
+		} finally {
+			if (reset) {
+				setLoadingOys(false);
+			} else {
+				setLoadingMoreOys(false);
+			}
+		}
+
+		if (reset) {
+			setOpenLocations(new Set<number>());
+			const expandId = pendingExpandOyId;
+			if (expandId !== null && pendingExpandType === "location") {
+				setOpenLocations(new Set([expandId]));
+				pendingExpandOyId = null;
+				pendingExpandType = null;
+			}
 		}
 	}
 
 	async function loadData() {
-		await Promise.all([loadFriends(), loadOys()]);
+		await Promise.all([loadFriends(), loadOysPage({ reset: true })]);
 	}
 
 	async function handleLogin(event: SubmitEvent) {
@@ -327,7 +354,7 @@ export default function App() {
 
 	createEffect(() => {
 		if (tab() === "oys" && currentUser()) {
-			loadOys();
+			loadOysPage({ reset: true });
 		}
 	});
 
@@ -395,6 +422,10 @@ export default function App() {
 									oys={oys()}
 									openLocations={openLocations}
 									onToggleLocation={toggleLocation}
+									hasMore={hasMoreOys}
+									loadingMore={loadingMoreOys}
+									loading={loadingOys}
+									onLoadMore={() => loadOysPage()}
 								/>
 							</Tabs.Content>
 

@@ -1,5 +1,5 @@
 import { Button } from "@kobalte/core/button";
-import { For, Show } from "solid-js";
+import { For, onCleanup, onMount, Show } from "solid-js";
 import type { Oy, OyPayload } from "../types";
 import { formatTime } from "../utils";
 import { LocationMap } from "./LocationMap";
@@ -9,14 +9,46 @@ type OysListProps = {
 	oys: Oy[];
 	openLocations: () => Set<number>;
 	onToggleLocation: (oyId: number) => void;
+	hasMore: () => boolean;
+	loadingMore: () => boolean;
+	loading: () => boolean;
+	onLoadMore: () => void;
 };
 
 export function OysList(props: OysListProps) {
+	let sentinel: HTMLDivElement | undefined;
+	const setSentinel = (el: HTMLDivElement) => {
+		sentinel = el;
+	};
+
+	onMount(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0]?.isIntersecting && props.hasMore()) {
+					props.onLoadMore();
+				}
+			},
+			{ rootMargin: "200px" },
+		);
+
+		if (sentinel) {
+			observer.observe(sentinel);
+		}
+
+		onCleanup(() => {
+			observer.disconnect();
+		});
+	});
+
 	return (
 		<div class="oys-list">
 			<Show
 				when={props.oys.length > 0}
-				fallback={<p class="oys-empty-state">No Oys yet!</p>}
+				fallback={
+					<p class="oys-empty-state">
+						{props.loading() ? "Loading Oys..." : "No Oys yet!"}
+					</p>
+				}
 			>
 				<For each={props.oys}>
 					{(oy) => {
@@ -85,6 +117,13 @@ export function OysList(props: OysListProps) {
 						);
 					}}
 				</For>
+			</Show>
+			<Show when={props.hasMore()}>
+				<div class="oys-list-footer" ref={setSentinel}>
+					<span class="oys-list-footer-text">
+						{props.loadingMore() ? "Loading more..." : "Scroll for more"}
+					</span>
+				</div>
 			</Show>
 		</div>
 	);

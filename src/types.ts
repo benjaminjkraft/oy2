@@ -23,3 +23,8 @@ export type Oy = {
 };
 
 export type SearchUser = Friend & { added?: boolean };
+
+export type OysCursor = {
+	before: number;
+	beforeId: number;
+};

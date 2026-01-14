@@ -123,3 +123,14 @@
 	color: var(--text-light);
 	padding: 3rem 1rem;
 }
+
+.oys-list-footer {
+	display: flex;
+	justify-content: center;
+	padding: 1.5rem 0 0.5rem;
+}
+
+.oys-list-footer-text {
+	font-size: 0.85rem;
+	color: var(--text-light);
+}

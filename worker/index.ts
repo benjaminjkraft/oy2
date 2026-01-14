@@ -35,6 +35,11 @@ type YoRow = {
 	from_username: string;
 };
 
+type OysCursor = {
+	before: number;
+	beforeId: number;
+};
+
 const app = new Hono<{
 	Bindings: Bindings;
 	Variables: {
@@ -260,15 +265,36 @@ app.get("/api/oys", async (c) => {
 		return c.json({ error: "Not authenticated" }, 401);
 	}
 
-	const yos = await c.env.DB.prepare(`
+	const beforeRaw = c.req.query("before");
+	const beforeIdRaw = c.req.query("beforeId");
+	const before = beforeRaw ? Number(beforeRaw) : Number.NaN;
+	const beforeId = beforeIdRaw ? Number(beforeIdRaw) : Number.NaN;
+	const hasCursor = Number.isFinite(before) && Number.isFinite(beforeId);
+	const pageSize = 30;
+
+	const yos = await c.env.DB.prepare(
+		`
     SELECT y.id, y.from_user_id, y.to_user_id, y.type, y.payload, y.created_at, u.username as from_username
     FROM yos y
     INNER JOIN users u ON y.from_user_id = u.id
     WHERE y.to_user_id = ?
-    ORDER BY y.created_at DESC
-    LIMIT 50
-  `)
-		.bind(user.id)
+      AND (
+        ? = 0
+        OR y.created_at < ?
+        OR (y.created_at = ? AND y.id < ?)
+      )
+    ORDER BY y.created_at DESC, y.id DESC
+    LIMIT ?
+  `,
+	)
+		.bind(
+			user.id,
+			hasCursor ? 1 : 0,
+			hasCursor ? before : 0,
+			hasCursor ? before : 0,
+			hasCursor ? beforeId : 0,
+			pageSize,
+		)
 		.all();
 
 	const yoRows = (yos.results || []) as YoRow[];
@@ -278,7 +304,12 @@ app.get("/api/oys", async (c) => {
 		type: yo.type || "oy",
 	}));
 
-	return c.json({ oys: results });
+	const hasMore = results.length === pageSize;
+	const last = results.at(-1);
+	const nextCursor: OysCursor | null =
+		hasMore && last ? { before: last.created_at, beforeId: last.id } : null;
+
+	return c.json({ oys: results, nextCursor });
 });
 
 // Send location (Lo!)
