@@ -20,6 +20,9 @@ export function SwipeableTabs(props: SwipeableTabsProps) {
 	const offsetScale = 0.4;
 	const swipeThreshold = 45;
 
+	const isSwipeBlockedTarget = (target: HTMLElement | null) =>
+		!!target?.closest(".oys-location-map");
+
 	const updateOffset = (deltaX: number, deltaY: number) => {
 		if (!axis) {
 			axis = Math.abs(deltaX) > Math.abs(deltaY) ? "x" : "y";
@@ -57,6 +60,10 @@ export function SwipeableTabs(props: SwipeableTabsProps) {
 		if (source === "pointer") {
 			return;
 		}
+		const target = event.target as HTMLElement | null;
+		if (isSwipeBlockedTarget(target)) {
+			return;
+		}
 		source = "touch";
 		start = { x: event.touches[0].clientX, y: event.touches[0].clientY };
 		axis = null;
@@ -88,6 +95,10 @@ export function SwipeableTabs(props: SwipeableTabsProps) {
 			return;
 		}
 		if (source === "touch") {
+			return;
+		}
+		const target = event.target as HTMLElement | null;
+		if (isSwipeBlockedTarget(target)) {
 			return;
 		}
 		source = "pointer";
