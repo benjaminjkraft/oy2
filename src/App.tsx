@@ -359,6 +359,12 @@ export default function App() {
 	});
 
 	createEffect(() => {
+		if (tab() === "friends" && currentUser()) {
+			loadFriends();
+		}
+	});
+
+	createEffect(() => {
 		const currentTab = tab();
 		if (!hasUpdatedHash) {
 			hasUpdatedHash = true;

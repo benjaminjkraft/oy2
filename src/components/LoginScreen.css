@@ -11,3 +11,40 @@
 	color: var(--text-light);
 	margin-bottom: 3rem;
 }
+
+.login-install {
+	display: none;
+	margin-top: 2.5rem;
+	padding: 1.25rem;
+	border-radius: 12px;
+	background: var(--bg-secondary);
+	color: var(--text);
+}
+
+.login-install-title {
+	margin: 0 0 0.75rem;
+	font-size: 1.1rem;
+	font-weight: 700;
+	text-align: center;
+}
+
+.login-install-list {
+	margin: 0 0 0.75rem;
+	padding-left: 1.25rem;
+	color: var(--text-light);
+	display: grid;
+	gap: 0.5rem;
+}
+
+.login-install-note {
+	margin: 0;
+	text-align: center;
+	font-size: 0.9rem;
+	color: var(--text-light);
+}
+
+@media (max-width: 640px) {
+	.login-install {
+		display: block;
+	}
+}

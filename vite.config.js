@@ -18,6 +18,7 @@ export default defineConfig({
       },
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,wav}'],
+        sourcemap: true,
       },
       manifestFilename: 'manifest.json',
       manifest: {

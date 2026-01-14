@@ -1,5 +1,6 @@
 import { Button } from "@kobalte/core/button";
 import type { JSX } from "solid-js";
+import { createSignal, onMount } from "solid-js";
 import { Screen } from "./Screen";
 import "./ButtonStyles.css";
 import "./FormControls.css";
@@ -10,6 +11,16 @@ type LoginScreenProps = {
 };
 
 export function LoginScreen(props: LoginScreenProps) {
+	const [showInstall, setShowInstall] = createSignal(false);
+
+	onMount(() => {
+		const isStandalone =
+			window.matchMedia("(display-mode: standalone)").matches ||
+			(navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+		setShowInstall(!isStandalone);
+	});
+
 	return (
 		<Screen>
 			<h1 class="login-logo">Oy</h1>
@@ -29,6 +40,18 @@ export function LoginScreen(props: LoginScreenProps) {
 					Get Started
 				</Button>
 			</form>
+			{showInstall() && (
+				<section class="login-install">
+					<h2 class="login-install-title">Install Oy on your home screen</h2>
+					<ul class="login-install-list">
+						<li>iPhone: tap Share, then "Add to Home Screen".</li>
+						<li>Android: tap the menu, then "Install app".</li>
+					</ul>
+					<p class="login-install-note">
+						Open Oy faster and get notifications.
+					</p>
+				</section>
+			)}
 		</Screen>
 	);
 }
