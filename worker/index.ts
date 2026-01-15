@@ -130,7 +130,9 @@ app.post("/api/auth/start", async (c) => {
 		return c.json({ error: "Username must be 2-20 characters" }, 400);
 	}
 
-	let user = (await c.env.DB.prepare("SELECT * FROM users WHERE username = ?")
+	let user = (await c.env.DB.prepare(
+		"SELECT * FROM users WHERE username COLLATE NOCASE = ?",
+	)
 		.bind(trimmedUsername)
 		.first()) as User | null;
 
@@ -187,7 +189,9 @@ app.post("/api/auth/verify", async (c) => {
 		return c.json({ error: "Missing verification code" }, 400);
 	}
 
-	const user = (await c.env.DB.prepare("SELECT * FROM users WHERE username = ?")
+	const user = (await c.env.DB.prepare(
+		"SELECT * FROM users WHERE username COLLATE NOCASE = ?",
+	)
 		.bind(trimmedUsername)
 		.first()) as User | null;
 
@@ -246,14 +250,21 @@ app.post("/api/auth/logout", async (c) => {
 // Create or get user
 app.post("/api/users", async (c) => {
 	const { username } = await c.req.json();
+	const trimmedUsername = String(username || "").trim();
 
-	if (!username || username.length < 2 || username.length > 20) {
+	if (
+		!trimmedUsername ||
+		trimmedUsername.length < 2 ||
+		trimmedUsername.length > 20
+	) {
 		return c.json({ error: "Username must be 2-20 characters" }, 400);
 	}
 
 	// Check if user exists
-	let user = (await c.env.DB.prepare("SELECT * FROM users WHERE username = ?")
-		.bind(username)
+	let user = (await c.env.DB.prepare(
+		"SELECT * FROM users WHERE username COLLATE NOCASE = ?",
+	)
+		.bind(trimmedUsername)
 		.first()) as User | null;
 
 	if (!user) {
@@ -261,7 +272,7 @@ app.post("/api/users", async (c) => {
 			const result = await c.env.DB.prepare(
 				"INSERT INTO users (username) VALUES (?)",
 			)
-				.bind(username)
+				.bind(trimmedUsername)
 				.run();
 
 			if (!result.success) {
@@ -282,15 +293,16 @@ app.post("/api/users", async (c) => {
 // Search users
 app.get("/api/users/search", async (c) => {
 	const q = c.req.query("q");
+	const trimmedQuery = q?.trim() ?? "";
 
-	if (!q || q.length < 2) {
+	if (!trimmedQuery || trimmedQuery.length < 2) {
 		return c.json({ users: [] });
 	}
 
 	const users = await c.env.DB.prepare(
-		"SELECT id, username FROM users WHERE username LIKE ? LIMIT 20",
+		"SELECT id, username FROM users WHERE username COLLATE NOCASE LIKE ? LIMIT 20",
 	)
-		.bind(`%${q}%`)
+		.bind(`%${trimmedQuery}%`)
 		.all();
 
 	const userResults = (users.results || []) as FriendUser[];
