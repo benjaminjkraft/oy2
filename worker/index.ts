@@ -15,7 +15,6 @@ type User = {
 	created_at?: number;
 	phone?: string | null;
 	phone_verified?: number | null;
-	session_token?: string | null;
 	admin?: number | null;
 	last_seen?: number | null;
 };
@@ -69,6 +68,7 @@ const app = new Hono<{
 	Bindings: Bindings;
 	Variables: {
 		user: User | null;
+		sessionToken: string | null;
 	};
 }>();
 
@@ -168,16 +168,21 @@ async function sendPushWithRetry(
 // Middleware to get current user from header
 app.use("*", async (c, next) => {
 	c.set("user", null);
+	c.set("sessionToken", null);
 	const sessionToken = c.req.header("x-session-token");
 	if (sessionToken) {
 		try {
 			const user = (await c.env.DB.prepare(
-				"SELECT * FROM users WHERE session_token = ?",
+				`SELECT users.*
+        FROM sessions
+        JOIN users ON users.id = sessions.user_id
+        WHERE sessions.token = ?`,
 			)
 				.bind(sessionToken)
 				.first()) as User | null;
 			c.set("user", user ?? null);
 			if (user) {
+				c.set("sessionToken", sessionToken);
 				const now = Math.floor(Date.now() / 1000);
 				await c.env.DB.prepare("UPDATE users SET last_seen = ? WHERE id = ?")
 					.bind(now, user.id)
@@ -325,10 +330,14 @@ app.post("/api/auth/verify", async (c) => {
 	}
 
 	const sessionToken = crypto.randomUUID();
+	const now = Math.floor(Date.now() / 1000);
 	await c.env.DB.prepare(
-		"UPDATE users SET phone_verified = 1, session_token = ?, last_seen = ? WHERE id = ?",
+		"UPDATE users SET phone_verified = 1, last_seen = ? WHERE id = ?",
 	)
-		.bind(sessionToken, Math.floor(Date.now() / 1000), user.id)
+		.bind(now, user.id)
+		.run();
+	await c.env.DB.prepare("INSERT INTO sessions (token, user_id) VALUES (?, ?)")
+		.bind(sessionToken, user.id)
 		.run();
 
 	return c.json({
@@ -348,12 +357,13 @@ app.get("/api/auth/session", async (c) => {
 
 app.post("/api/auth/logout", async (c) => {
 	const user = c.get("user");
-	if (!user) {
+	const sessionToken = c.get("sessionToken");
+	if (!user || !sessionToken) {
 		return c.json({ error: "Not authenticated" }, 401);
 	}
 
-	await c.env.DB.prepare("UPDATE users SET session_token = NULL WHERE id = ?")
-		.bind(user.id)
+	await c.env.DB.prepare("DELETE FROM sessions WHERE token = ?")
+		.bind(sessionToken)
 		.run();
 
 	return c.json({ success: true });
@@ -865,7 +875,10 @@ app.get("/api/admin/stats", async (c) => {
 		`
     SELECT id, username, last_seen
     FROM users
-    WHERE session_token IS NOT NULL AND last_seen >= ?
+    WHERE last_seen >= ?
+      AND EXISTS (
+        SELECT 1 FROM sessions WHERE sessions.user_id = users.id
+      )
     ORDER BY last_seen DESC
   `,
 	)
