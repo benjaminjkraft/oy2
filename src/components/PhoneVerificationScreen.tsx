@@ -26,6 +26,11 @@ export function PhoneVerificationScreen(props: PhoneVerificationScreenProps) {
 				<Button type="submit" class="btn-primary">
 					Send Code
 				</Button>
+				<p class="login-note">
+					By providing your phone number you agree to receive informational text
+					messages from Oy. Frequency will vary; message &amp; data rates may
+					apply. Reply STOP to cancel.
+				</p>
 			</form>
 		</Screen>
 	);
