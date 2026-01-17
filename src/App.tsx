@@ -11,6 +11,7 @@ import { PhoneVerificationScreen } from "./components/PhoneVerificationScreen";
 import { PrivacyPolicyScreen } from "./components/PrivacyPolicyScreen";
 import { Screen } from "./components/Screen";
 import { SwipeableTabs } from "./components/SwipeableTabs";
+import { UpdateToast } from "./components/UpdateToast";
 import { VerifyCodeScreen } from "./components/VerifyCodeScreen";
 import { OyToastContainer, addOyToast } from "./components/OyToast";
 import type { FriendWithLastYo, Oy, OysCursor, User } from "./types";
@@ -55,6 +56,10 @@ export default function App() {
 	);
 	const [swRegistration, setSwRegistration] =
 		createSignal<ServiceWorkerRegistration | null>(null);
+	const [updateReady, setUpdateReady] = createSignal(false);
+	const [performUpdate, setPerformUpdate] = createSignal<(() => void) | null>(
+		null,
+	);
 	const parsedOyId = requestedOyId ? Number(requestedOyId) : null;
 	const [loadingOys, setLoadingOys] = createSignal(false);
 	const [loadingMoreOys, setLoadingMoreOys] = createSignal(false);
@@ -134,6 +139,13 @@ export default function App() {
 		});
 	}
 
+	function applyUpdate() {
+		const update = performUpdate();
+		if (update) {
+			update();
+		}
+	}
+
 	async function registerServiceWorker() {
 		if (!("serviceWorker" in navigator)) {
 			return;
@@ -142,7 +154,10 @@ export default function App() {
 		const updateSW = registerSW({
 			immediate: true,
 			onNeedRefresh() {
-				void updateSW(true);
+				setUpdateReady(true);
+				setPerformUpdate(() => () => {
+					void updateSW(true);
+				});
 			},
 		});
 
@@ -700,6 +715,9 @@ export default function App() {
 				>
 					{(user) => renderApp(user())}
 				</Show>
+			</Show>
+			<Show when={updateReady()}>
+				<UpdateToast onRefresh={applyUpdate} />
 			</Show>
 		</>
 	);
