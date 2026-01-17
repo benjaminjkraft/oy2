@@ -20,9 +20,12 @@ const urlParams = new URLSearchParams(window.location.search);
 const hashValue = window.location.hash.replace(/^#/, "");
 const hashParams = new URLSearchParams(hashValue);
 const initialHashUsesParam = hashParams.has("tab");
-const requestedTab = hashValue ? (hashParams.get("tab") ?? hashValue) : null;
-const requestedOyId = urlParams.get("yo");
-const requestedExpand = urlParams.get("expand");
+const requestedTab =
+	hashValue && hashValue !== "tab"
+		? (hashParams.get("tab") ?? hashValue)
+		: urlParams.get("tab");
+const requestedOyId = urlParams.get("yo") ?? hashParams.get("yo");
+const requestedExpand = urlParams.get("expand") ?? hashParams.get("expand");
 const initialTab =
 	requestedTab && ["friends", "oys", "add"].includes(requestedTab)
 		? requestedTab
