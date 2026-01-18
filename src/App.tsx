@@ -53,6 +53,10 @@ export default function App() {
 	const [openLocations, setOpenLocations] = createSignal<Set<number>>(
 		new Set(),
 	);
+	const [userLocation, setUserLocation] = createSignal<{
+		lat: number;
+		lon: number;
+	} | null>(null);
 	const [swRegistration, setSwRegistration] =
 		createSignal<ServiceWorkerRegistration | null>(null);
 	const parsedOyId = requestedOyId ? Number(requestedOyId) : null;
@@ -443,6 +447,22 @@ export default function App() {
 		});
 	}
 
+	async function updateUserLocation() {
+		try {
+			const position = await getCurrentPosition({
+				enableHighAccuracy: false,
+				timeout: 5000,
+				maximumAge: 300000, // Cache for 5 minutes
+			});
+			setUserLocation({
+				lat: position.coords.latitude,
+				lon: position.coords.longitude,
+			});
+		} catch (err) {
+			console.log("Could not get user location:", err);
+		}
+	}
+
 	onMount(async () => {
 		await registerServiceWorker();
 		const savedToken = localStorage.getItem("sessionToken");
@@ -590,6 +610,7 @@ export default function App() {
 	createEffect(() => {
 		if (tab() === "oys" && currentUser()) {
 			loadOysPage({ reset: true });
+			updateUserLocation();
 		}
 	});
 
@@ -666,6 +687,7 @@ export default function App() {
 								loadingMore={loadingMoreOys}
 								loading={loadingOys}
 								onLoadMore={() => loadOysPage()}
+								userLocation={userLocation()}
 							/>
 						</Tabs.Content>
 

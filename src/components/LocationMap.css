@@ -1,3 +1,23 @@
+.oys-location-map-container {
+	position: relative;
+	width: 100%;
+}
+
+.oys-location-distance {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	background-color: var(--bg-elevated);
+	color: var(--fg);
+	padding: 8px 12px;
+	border-radius: 8px;
+	font-size: 14px;
+	font-weight: 600;
+	z-index: 1000;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	border: 1px solid var(--border);
+}
+
 .oys-location-map {
 	width: 100%;
 	height: 320px;

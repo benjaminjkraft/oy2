@@ -14,6 +14,7 @@ type OysListProps = {
 	loadingMore: () => boolean;
 	loading: () => boolean;
 	onLoadMore: () => void;
+	userLocation: { lat: number; lon: number } | null;
 };
 
 export function OysList(props: OysListProps) {
@@ -125,6 +126,7 @@ export function OysList(props: OysListProps) {
 													lat={payload.lat}
 													lon={payload.lon}
 													open={isOpen()}
+													userLocation={props.userLocation}
 												/>
 											</div>
 										</div>
