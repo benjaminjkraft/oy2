@@ -20,6 +20,7 @@ self.addEventListener("push", (event) => {
 		tag?: string;
 		url?: string;
 		notificationId?: number;
+		type?: "oy" | "lo";
 	} = {
 		title: "Oy!",
 		body: "Someone sent you an Oy!",
