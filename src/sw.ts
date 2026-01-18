@@ -29,10 +29,14 @@ self.addEventListener("push", (event) => {
 	if (event.data) {
 		try {
 			data = event.data.json();
-		} catch {
+			console.log("Push data parsed:", data);
+		} catch (e) {
+			console.error("Failed to parse push data as JSON:", e);
 			data.body = event.data.text();
 		}
 	}
+
+	console.log("Final push data:", data);
 
 	const options: NotificationOptions & { vibrate?: number[] } = {
 		body: data.body,
@@ -58,11 +62,14 @@ self.addEventListener("push", (event) => {
 	const broadcastPromise = self.clients
 		.matchAll({ type: "window", includeUncontrolled: true })
 		.then((clientList) => {
+			console.log("Broadcasting to clients:", clientList.length);
 			if (clientList.length === 0) {
 				return;
 			}
 			for (const client of clientList) {
-				client.postMessage({ type: "push", payload: data });
+				const message = { type: "push", payload: data };
+				console.log("Sending message to client:", message);
+				client.postMessage(message);
 			}
 		});
 

@@ -530,6 +530,7 @@ export default function App() {
 		};
 
 		const onMessage = (event: MessageEvent) => {
+			console.log("SW message received:", event.data);
 			const payload = event.data?.payload as
 				| {
 						type?: string;
@@ -538,7 +539,9 @@ export default function App() {
 						body?: string;
 				  }
 				| undefined;
+			console.log("Parsed payload:", payload);
 			if (payload?.type !== "oy" && payload?.type !== "lo") {
+				console.log("Payload type not oy/lo, ignoring");
 				return;
 			}
 			if (
@@ -561,10 +564,22 @@ export default function App() {
 				payload.title &&
 				payload.body
 			) {
+				console.log("Showing oy toast:", {
+					id: payload.notificationId,
+					title: payload.title,
+					body: payload.body,
+				});
 				addOyToast({
 					id: payload.notificationId,
 					title: payload.title,
 					body: payload.body,
+				});
+			} else {
+				console.log("Not showing toast - conditions not met:", {
+					type: payload.type,
+					hasNotificationId: !!payload.notificationId,
+					hasTitle: !!payload.title,
+					hasBody: !!payload.body,
 				});
 			}
 		};
