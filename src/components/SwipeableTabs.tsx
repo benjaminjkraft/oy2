@@ -271,8 +271,8 @@ export function SwipeableTabs(props: SwipeableTabsProps) {
 		if (!node) {
 			return;
 		}
-		const prefersTouch = "ontouchstart" in window;
-		const supportsPointer = !prefersTouch && "PointerEvent" in window;
+		// Prefer pointer events over touch events when available (better for modern Chrome on Android)
+		const supportsPointer = "PointerEvent" in window;
 		if (supportsPointer) {
 			node.addEventListener("pointerdown", handlePointerStart, {
 				passive: true,
