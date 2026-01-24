@@ -8,6 +8,8 @@
 }
 
 .swipeable-tabs {
+	display: flex;
+	flex-direction: column;
 	flex: 1;
 	min-height: 0;
 	transition: transform 0.2s ease;
